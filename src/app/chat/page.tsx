@@ -7,12 +7,12 @@ import { ChatLayout } from "@/components/chat/ChatLayout";
 export default async function ChatPage({
   searchParams,
 }: {
-  searchParams: Promise<{ id?: string }>;
+  searchParams: { id?: string };
 }) {
   const user = await getUser();
   if (!user) redirect("/");
 
-  const params = await searchParams;
+  const params = searchParams;
   const conversations = await getConversations();
   const profile = await getProfile();
 

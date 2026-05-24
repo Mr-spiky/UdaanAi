@@ -5,10 +5,10 @@ import LandingPage from "@/components/landing/LandingPage";
 export default async function Home({
   searchParams,
 }: {
-  searchParams: Promise<{ auth?: string }>;
+  searchParams: { auth?: string };
 }) {
   const user = await getUser();
-  const params = await searchParams;
+  const params = searchParams;
 
   // Authenticated users go straight to chat
   if (user) {
