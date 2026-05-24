@@ -1,0 +1,85 @@
+// Udaan AI — Database Schema
+// AI-powered mentor & career guidance platform for India
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  profile       UserProfile?
+  conversations Conversation[]
+  bookmarks     Bookmark[]
+  documents     Document[]
+}
+
+// User background — used to personalize AI recommendations
+model UserProfile {
+  id           String  @id @default(cuid())
+  userId       String  @unique
+  name         String?
+  age          Int?
+  state        String?  // e.g. "Maharashtra", "Bihar", "UP"
+  district     String?
+  education    String?  // "10th", "12th", "Graduate", "Postgraduate"
+  stream       String?  // "Science", "Arts", "Commerce", "Engineering", "Other"
+  category     String?  // "General", "OBC", "SC", "ST", "EWS"
+  annualIncome Int?     // family annual income in INR
+  employed     Boolean  @default(false)
+  interests    String   @default("[]")  // JSON: ["coding", "design", "teaching"]
+  goals        String   @default("[]")  // JSON: ["scholarship", "job", "startup"]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Each chat session with Udaan AI
+model Conversation {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String   @default("New Conversation")
+  messages  String   @default("[]")  // JSON array of AI SDK messages
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Uploaded documents — store extracted text, not the raw file
+model Document {
+  id            String   @id @default(cuid())
+  userId        String
+  name          String   // original filename e.g. "marksheet.pdf"
+  mimeType      String   @default("application/pdf")
+  sizeBytes     Int      @default(0)
+  extractedText String   @default("")  // text extracted from PDF/doc
+  createdAt     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Saved schemes, jobs, internships
+model Bookmark {
+  id         String   @id @default(cuid())
+  userId     String
+  type       String   // "scheme" | "job" | "internship"
+  externalId String   // ID from our knowledge base
+  name       String
+  data       String   @default("{}")  // cached JSON data
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type, externalId])
+}
